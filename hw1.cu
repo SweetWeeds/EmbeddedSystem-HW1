@@ -96,11 +96,12 @@ int main(int argc, char *argv[]) {
             // Write information of execution on device.
             resultFile << "device," << numThreadsperBlock << "," << numBlocks << "," << device_exec_time << "\n";
             cudaMemcpy(host_device_matr, device_matr, matr_size, cudaMemcpyDeviceToHost);
+            // Compare concatenation results of host and device
             int diff = compareArray(host_matr, host_device_matr, numElements);
             if (diff) {
-                printf("[WARNING] ");
+                printf("[WARNING] ");   // Different points are exist.
             } else {
-                printf("[INFO] ");
+                printf("[INFO] ");      //
             }
             printf("numOps: %d, numBlocks: %d, numThreadsperBlock: %d, diff: %d, exec_time: %.4lf\n", numOps, numBlocks, numThreadsperBlock, diff, device_exec_time);
         }
