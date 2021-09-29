@@ -81,17 +81,23 @@ int main(int argc, char *argv[]) {
                         numElements / (numBlocks * numThreadsperBlock) + (numElements % (numBlocks * numThreadsperBlock) ? 1 : 0) : 1;
             dim3 gridSize(numBlocks);
             dim3 blockSize(numThreadsperBlock);
+            float tmp_exec_time;
+            device_exec_time = 0.0;
 
-            cudaMemset(device_matr, 0, numElements);    // Initialize values of 'device_matr'
-            cudaEventCreate(&cuda_start);
-            cudaEventCreate(&cuda_end);
-            cudaEventRecord(cuda_start, 0);
-            device_Concatenate<<<gridSize, blockSize>>>(device_mat1, device_mat2, device_matr, numOps, numElements, mat1_col, mat2_col, matr_col);
-            cudaEventRecord(cuda_end, 0);
-            cudaEventSynchronize(cuda_end);
-            cudaEventElapsedTime(&device_exec_time, cuda_start, cuda_end);
-            cudaEventDestroy(cuda_start);
-            cudaEventDestroy(cuda_end);
+            for (int i = 0; i < ITERATION; i++) {
+                cudaMemset(device_matr, 0, numElements);    // Initialize values of 'device_matr'
+                cudaEventCreate(&cuda_start);
+                cudaEventCreate(&cuda_end);
+                cudaEventRecord(cuda_start, 0);
+                device_Concatenate<<<gridSize, blockSize>>>(device_mat1, device_mat2, device_matr, numOps, numElements, mat1_col, mat2_col, matr_col);
+                cudaEventRecord(cuda_end, 0);
+                cudaEventSynchronize(cuda_end);
+                cudaEventElapsedTime(&tmp_exec_time, cuda_start, cuda_end);
+                cudaEventDestroy(cuda_start);
+                cudaEventDestroy(cuda_end);
+                device_exec_time += tmp_exec_time;
+            }
+            device_exec_time /= ITERATION;
 
             // Write information of execution on device.
             resultFile << "device," << numThreadsperBlock << "," << numBlocks << "," << device_exec_time << "\n";
